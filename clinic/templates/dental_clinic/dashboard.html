@@ -1,0 +1,103 @@
+{% extends "dental_clinic/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<div class="max-w-6xl mx-auto py-10">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center mb-8">
+    <h1 class="text-3xl font-bold flex items-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18M3 6h18M3 18h18" />
+      </svg>
+      Dashboard
+    </h1>
+
+    <!-- ฟอร์มเลือกเดือน -->
+    <form method="get" class="flex items-center space-x-2">
+      <select name="month" class="border rounded px-3 py-2 focus:ring focus:ring-indigo-300">
+        <option value="">-- เลือกเดือน --</option>
+        {% for m in all_months %}
+          <option value="{{ m.value }}" {% if selected_month == m.value %}selected{% endif %}>
+            {{ m.label }}
+          </option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">แสดง</button>
+    </form>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+    <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+      <i class="fa-solid fa-hospital-user text-indigo-600 text-3xl"></i>
+      <div>
+        <h2 class="text-lg font-bold">ผู้ป่วย</h2>
+        <p class="text-gray-600">{{ patients_count|default:"0" }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+      <i class="fa-solid fa-calendar-check text-green-600 text-3xl"></i>
+      <div>
+        <h2 class="text-lg font-bold">นัดหมาย</h2>
+        <p class="text-gray-600">{{ appointments_count|default:"0" }}</p>
+      </div>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow flex items-center space-x-4">
+      <i class="fa-solid fa-user-doctor text-yellow-600 text-3xl"></i>
+      <div>
+        <h2 class="text-lg font-bold">ทันตแพทย์</h2>
+        <p class="text-gray-600">{{ dentists_count|default:"0" }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="grid grid-cols-1 gap-8">
+    <!-- กราฟจำนวนคนไข้ -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-lg font-bold mb-4">จำนวนผู้ป่วยในเดือน {{ selected_month_label }}</h2>
+      <canvas id="patientsChart"></canvas>
+    </div>
+
+    <!-- กราฟจำนวนผู้ป่วยแยกตามเพศ -->
+    <div class="bg-white p-6 rounded-lg shadow">
+      <h2 class="text-lg font-bold mb-4">จำนวนผู้ป่วยแยกตามเพศ</h2>
+      <canvas id="genderChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Chart: จำนวนคนไข้รายวัน
+  new Chart(document.getElementById('patientsChart'), {
+    type: 'line',
+    data: {
+      labels: {{ days|safe }},  // เช่น [1,2,3,...,31]
+      datasets: [{
+        label: 'จำนวนผู้ป่วย',
+        data: {{ patients_daily|safe }},
+        borderColor: '#6366F1',
+        backgroundColor: 'rgba(99,102,241,0.2)',
+        fill: true,
+        tension: 0.3
+      }]
+    }
+  });
+
+  // Chart: คนไข้แยกตามเพศ
+  new Chart(document.getElementById('genderChart'), {
+    type: 'doughnut',
+    data: {
+      labels: ['ชาย', 'หญิง'],
+      datasets: [{
+        data: {{ patients_gender|safe }},  // เช่น [45, 55]
+        backgroundColor: ['#3B82F6','#F43F5E']
+      }]
+    }
+  });
+</script>
+{% endblock %}

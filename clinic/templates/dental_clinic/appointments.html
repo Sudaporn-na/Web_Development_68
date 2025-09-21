@@ -1,0 +1,65 @@
+{% extends "dental_clinic/base.html" %}
+{% block title %}การนัดหมาย{% endblock %}
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+  <h1 class="text-3xl font-bold flex items-center text-indigo-700">
+    <i class="fa-solid fa-calendar-check mr-2 text-violet-600"></i>
+    การนัดหมาย
+  </h1>
+  <a href="{% url 'appointment_add' %}" 
+     class="bg-gradient-to-r from-indigo-500 to-violet-600 text-white px-5 py-2 rounded-lg shadow hover:opacity-90 transition flex items-center">
+    <i class="fa-solid fa-plus mr-2"></i> เพิ่มนัดหมาย
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border border-violet-100">
+  <table class="min-w-full divide-y divide-violet-200">
+    <thead class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+      <tr>
+        <th class="px-6 py-3 text-left text-sm font-semibold">ผู้ป่วย</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">ทันตแพทย์</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">บริการ</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">วันที่</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">เวลา</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">สถานะ</th>
+        <th class="px-6 py-3 text-center text-sm font-semibold">การจัดการ</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      {% for a in appointments %}
+      <tr class="hover:bg-violet-50 transition">
+        <td class="px-6 py-4">{{ a.patient.name }}</td>
+        <td class="px-6 py-4">{{ a.dentist.name }}</td>
+        <td class="px-6 py-4">{{ a.service.name }}</td>
+        <td class="px-6 py-4">{{ a.appointment_date }}</td>
+        <td class="px-6 py-4">{{ a.start_time }} - {{ a.end_time }}</td>
+        <td class="px-6 py-4">
+          <span class="px-2 py-1 rounded text-xs font-medium
+            {% if a.status == 'scheduled' %} bg-yellow-100 text-yellow-700
+            {% elif a.status == 'confirmed' %} bg-blue-100 text-blue-700
+            {% elif a.status == 'completed' %} bg-green-100 text-green-700
+            {% elif a.status == 'cancelled' %} bg-red-100 text-red-700
+            {% else %} bg-gray-100 text-gray-700 {% endif %}">
+            {{ a.get_status_display }}
+          </span>
+        </td>
+        <td class="px-6 py-4 text-center space-x-3">
+          <a href="{% url 'appointment_edit' a.pk %}" 
+             class="text-indigo-600 hover:text-indigo-800" title="แก้ไข">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </a>
+          <a href="{% url 'appointment_delete' a.pk %}" 
+             class="text-red-600 hover:text-red-800" title="ลบ">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="px-6 py-4 text-center text-gray-500">ไม่มีข้อมูล</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

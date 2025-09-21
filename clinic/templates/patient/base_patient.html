@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Dental Clinic (Patient){% endblock %}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gradient-to-b from-white via-[#F3E8FF] to-white">
+
+<!-- Navbar -->
+<nav class="fixed top-0 left-0 w-full z-50 bg-[#4C1D95]/70 backdrop-blur-md shadow-lg transition-colors duration-300">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+
+      <!-- Logo -->
+      <a href="{% url 'patient_dashboard' %}" class="flex items-center text-white font-bold text-xl tracking-wide drop-shadow-sm">
+        <i class="fa-solid fa-tooth text-pink-300 mr-2 text-2xl"></i>
+        <span>Dental Clinic (Patient)</span>
+      </a>
+
+      <!-- Center Menu -->
+      <div class="hidden md:flex space-x-8 text-sm items-center">
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'patient_dashboard' %}" class="flex items-center text-violet-100 hover:text-white transition font-medium">
+            <i class="fa-solid fa-house-user mr-2 text-violet-300"></i> หน้าหลัก
+          </a>
+          <a href="{% url 'appointments_patient' %}" class="flex items-center text-violet-100 hover:text-white transition font-medium">
+            <i class="fa-solid fa-calendar-check mr-2 text-violet-300"></i> นัดหมายของฉัน
+          </a>
+          <a href="{% url 'patient_profile' %}" class="flex items-center text-violet-100 hover:text-white transition font-medium">
+            <i class="fa-solid fa-user mr-2 text-violet-300"></i> โปรไฟล์
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Right Side -->
+      <div class="hidden md:flex items-center space-x-3">
+        {% if request.user.is_authenticated %}
+          <a href="{% url 'logout' %}" 
+             class="flex items-center px-3 py-1.5 rounded-lg text-red-200 hover:text-white hover:bg-red-500/30 transition font-medium">
+            <i class="fa-solid fa-right-from-bracket mr-2"></i> ออกจากระบบ
+          </a>
+        {% else %}
+          <a href="{% url 'login' %}" 
+             class="px-3 py-1.5 border border-violet-300 text-violet-100 rounded-lg hover:bg-violet-600/30 transition font-medium">
+            เข้าสู่ระบบ
+          </a>
+          <a href="{% url 'register' %}" 
+             class="px-3 py-1.5 bg-gradient-to-r from-violet-500 to-indigo-600 text-white rounded-lg shadow hover:opacity-90 transition font-medium">
+            สมัครสมาชิก
+          </a>
+        {% endif %}
+      </div>
+
+      <!-- Mobile Hamburger -->
+      <div class="md:hidden flex items-center">
+        <button id="menu-btn" class="text-white focus:outline-none">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 6h16M4 12h16m-7 6h7"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu -->
+  <div id="mobile-menu" class="hidden md:hidden bg-[#4C1D95]/95 px-4 py-3 space-y-2">
+    {% if request.user.is_authenticated %}
+      <a href="{% url 'patient_dashboard' %}" class="block text-violet-100 hover:text-white">หน้าหลัก</a>
+      <a href="{% url 'appointments_patient' %}" class="block text-violet-100 hover:text-white">นัดหมายของฉัน</a>
+      <a href="{% url 'patient_profile' %}" class="block text-violet-100 hover:text-white">โปรไฟล์</a>
+      <a href="{% url 'logout' %}" class="block text-red-200 hover:text-white">ออกจากระบบ</a>
+    {% else %}
+      <a href="{% url 'login' %}" class="block text-violet-100 hover:text-white">เข้าสู่ระบบ</a>
+      <a href="{% url 'register' %}" class="block text-violet-100 hover:text-white">สมัครสมาชิก</a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- Content -->
+<main class="p-6 mt-20">
+  {% block content %}{% endblock %}
+</main>
+
+<script>
+  // Toggle mobile menu
+  document.addEventListener("DOMContentLoaded", function() {
+    const menuBtn = document.getElementById("menu-btn");
+    const mobileMenu = document.getElementById("mobile-menu");
+    menuBtn.addEventListener("click", () => {
+      mobileMenu.classList.toggle("hidden");
+    });
+  });
+</script>
+</body>
+</html>

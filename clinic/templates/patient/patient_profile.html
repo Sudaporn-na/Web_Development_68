@@ -1,0 +1,42 @@
+{% extends "patient/base_patient.html" %}
+{% block title %}โปรไฟล์ของฉัน{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
+  <h1 class="text-2xl font-bold mb-4">ข้อมูลส่วนตัว</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div>
+      <p class="font-medium text-gray-700">ชื่อ:</p>
+      <p>{{ patient.name }}</p>
+    </div>
+    <div>
+      <p class="font-medium text-gray-700">เพศ:</p>
+      <p>{{ patient.get_gender_display }}</p>
+    </div>
+    <div>
+      <p class="font-medium text-gray-700">อายุ:</p>
+      <p>{{ patient.age }} ปี</p>
+    </div>
+    <div>
+      <p class="font-medium text-gray-700">เบอร์โทร:</p>
+      <p>{{ patient.phone }}</p>
+    </div>
+    <div>
+      <p class="font-medium text-gray-700">อีเมล:</p>
+      <p>{{ patient.email }}</p>
+    </div>
+    <div class="md:col-span-2">
+      <p class="font-medium text-gray-700">ที่อยู่:</p>
+      <p>{{ patient.address }}</p>
+    </div>
+  </div>
+
+  <div class="flex justify-end">
+    <a href="{% url 'patient_edit' patient.pk %}" 
+       class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+       <i class="fa-solid fa-pen mr-2"></i> แก้ไขโปรไฟล์
+    </a>
+  </div>
+</div>
+{% endblock %}

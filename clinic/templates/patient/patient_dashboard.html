@@ -1,0 +1,41 @@
+{% extends "patient/base_patient.html" %}
+{% block title %}หน้าหลักคนไข้{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+  <h1 class="text-2xl font-bold mb-4">นัดหมายล่าสุดของคุณ</h1>
+
+  <div class="bg-white rounded-lg shadow overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-violet-50">
+        <tr>
+          <th class="px-6 py-3">วันที่</th>
+          <th class="px-6 py-3">เวลา</th>
+          <th class="px-6 py-3">ทันตแพทย์</th>
+          <th class="px-6 py-3">บริการ</th>
+          <th class="px-6 py-3">สถานะ</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-200">
+        {% for a in appointments %}
+        <tr>
+          <td class="px-6 py-4">{{ a.appointment_date }}</td>
+          <td class="px-6 py-4">{{ a.start_time }} - {{ a.end_time }}</td>
+          <td class="px-6 py-4">{{ a.dentist.name }}</td>
+          <td class="px-6 py-4">{{ a.service.name }}</td>
+          <td class="px-6 py-4">{{ a.get_status_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+            ยังไม่มีนัดหมาย
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+{% endblock %}

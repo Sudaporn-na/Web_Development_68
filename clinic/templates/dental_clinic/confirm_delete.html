@@ -1,0 +1,32 @@
+{% extends "dental_clinic/base.html" %}
+{% block title %}ยืนยันการลบ{% endblock %}
+{% block content %}
+<div class="flex items-center justify-center min-h-[70vh] bg-gradient-to-b from-white via-[#F6F4FF] to-white">
+  <div class="w-full max-w-md bg-white/90 backdrop-blur rounded-2xl shadow-xl ring-1 ring-violet-200 p-8 text-center">
+
+    <!-- Icon -->
+    <div class="mb-4">
+      <i class="fa-solid fa-triangle-exclamation text-red-500 text-5xl"></i>
+    </div>
+
+    <!-- Title -->
+    <h2 class="text-2xl font-bold text-slate-900 mb-2">
+      คุณแน่ใจหรือไม่ที่จะลบ {{ type }}
+    </h2>
+    <p class="text-gray-600 mb-6">{{ object }}</p>
+
+    <!-- Form -->
+    <form method="post" class="flex justify-center space-x-3">
+      {% csrf_token %}
+      <button type="submit" 
+              class="px-5 py-2.5 rounded-xl bg-red-600 text-white font-medium shadow-md hover:bg-red-700 hover:shadow-lg transition">
+        <i class="fa-solid fa-trash mr-1"></i> ลบ
+      </button>
+      <a href="javascript:history.back()" 
+         class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-medium shadow-md hover:opacity-90 hover:shadow-lg transition">
+        <i class="fa-solid fa-rotate-left mr-1"></i> ยกเลิก
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

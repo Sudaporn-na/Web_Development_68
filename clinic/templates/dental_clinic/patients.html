@@ -1,0 +1,54 @@
+{% extends "dental_clinic/base.html" %}
+{% block title %}ข้อมูลคนไข้{% endblock %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-8">
+  <h1 class="text-3xl font-bold flex items-center text-indigo-700">
+    <i class="fa-solid fa-hospital-user mr-3 text-indigo-500"></i>
+    ข้อมูลคนไข้
+  </h1>
+  <a href="{% url 'patient_add' %}" 
+     class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white px-5 py-2 rounded-lg shadow hover:shadow-lg hover:opacity-90 transition flex items-center">
+    <i class="fa-solid fa-user-plus mr-2"></i> เพิ่มคนไข้
+  </a>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border border-indigo-100">
+  <table class="min-w-full divide-y divide-indigo-200">
+    <thead class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+      <tr>
+        <th class="px-6 py-3 text-left text-sm font-semibold">ชื่อ</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">เพศ</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">อายุ</th>
+        <th class="px-6 py-3 text-left text-sm font-semibold">เบอร์โทร</th>
+        <th class="px-6 py-3 text-center text-sm font-semibold">การจัดการ</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for p in patients %}
+      <tr class="hover:bg-violet-50 transition">
+        <td class="px-6 py-4">{{ p.name }}</td>
+        <td class="px-6 py-4">{{ p.get_gender_display }}</td>
+        <td class="px-6 py-4">{{ p.age }}</td>
+        <td class="px-6 py-4">{{ p.phone }}</td>
+        <td class="px-6 py-4 text-center space-x-3">
+          <a href="{% url 'patient_edit' p.pk %}" 
+             class="inline-flex items-center px-3 py-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800 transition">
+            <i class="fa-solid fa-pen-to-square"></i>
+          </a>
+          <a href="{% url 'patient_delete' p.pk %}" 
+             class="inline-flex items-center px-3 py-1 rounded-lg text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-800 transition">
+            <i class="fa-solid fa-trash"></i>
+          </a>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="px-6 py-6 text-center text-gray-500">ไม่มีข้อมูล</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
