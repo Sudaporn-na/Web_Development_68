@@ -14,7 +14,7 @@
 
 <div class="bg-white rounded-xl shadow overflow-hidden ring-1 ring-violet-200">
   <table class="min-w-full divide-y divide-gray-200 text-sm">
-    <thead class="bg-gradient-to-r from-violet-50 to-violet-100 text-violet-700">
+    <thead class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
       <tr>
         <th class="px-6 py-3 text-left font-semibold">ชื่อบริการ</th>
         <th class="px-6 py-3 text-left font-semibold">ราคา (บาท)</th>
@@ -29,6 +29,9 @@
         <td class="px-6 py-4">{{ s.price }}</td>
         <td class="px-6 py-4">{{ s.duration_minutes }}</td>
         <td class="px-6 py-4 text-center space-x-3">
+          <a href="{% url 'object_detail' 'service' s.pk %}" class="text-indigo-600 hover:text-indigo-800 ml-2" title="ดูรายละเอียด">
+            <i class="fa-solid fa-eye"></i>
+          </a>
           <a href="{% url 'service_edit' s.pk %}" 
              class="text-indigo-600 hover:text-indigo-800 transition">
             <i class="fa-solid fa-pen-to-square"></i>
