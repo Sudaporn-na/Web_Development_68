@@ -14,13 +14,13 @@
 
 <div class="bg-white rounded-xl shadow-lg overflow-hidden ring-1 ring-indigo-100">
   <table class="min-w-full divide-y divide-indigo-100">
-    <thead class="bg-gradient-to-r from-indigo-50 to-violet-50">
-      <tr class="text-left text-indigo-700 font-semibold">
-        <th class="px-6 py-3"><i class="fa-solid fa-user-doctor mr-2 text-violet-500"></i>ชื่อ</th>
-        <th class="px-6 py-3"><i class="fa-solid fa-stethoscope mr-2 text-violet-500"></i>ความเชี่ยวชาญ</th>
-        <th class="px-6 py-3"><i class="fa-solid fa-phone mr-2 text-violet-500"></i>เบอร์โทร</th>
-        <th class="px-6 py-3"><i class="fa-solid fa-envelope mr-2 text-violet-500"></i>อีเมล</th>
-        <th class="px-6 py-3 text-center"><i class="fa-solid fa-gear mr-2 text-violet-500"></i>การจัดการ</th>
+    <thead class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+      <tr class="text-left text-white font-semibold">
+        <th class="px-6 py-3"><i class="fa-solid fa-user-doctor mr-2 text-white"></i>ชื่อ</th>
+        <th class="px-6 py-3"><i class="fa-solid fa-stethoscope mr-2 text-white"></i>ความเชี่ยวชาญ</th>
+        <th class="px-6 py-3"><i class="fa-solid fa-phone mr-2 text-white"></i>เบอร์โทร</th>
+        <th class="px-6 py-3"><i class="fa-solid fa-envelope mr-2 text-white"></i>อีเมล</th>
+        <th class="px-6 py-3 text-center"><i class="fa-solid fa-gear mr-2 text-white"></i>การจัดการ</th>
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-200 text-slate-700">
@@ -31,6 +31,10 @@
         <td class="px-6 py-4">{{ d.phone }}</td>
         <td class="px-6 py-4">{{ d.email }}</td>
         <td class="px-6 py-4 text-center space-x-3">
+          <a href="{% url 'object_detail' 'dentist' d.pk %}" 
+          class="text-indigo-600 hover:text-indigo-800 ml-2" title="ดูรายละเอียด">
+            <i class="fa-solid fa-eye"></i>
+          </a>
           <a href="{% url 'dentist_edit' d.pk %}" 
              class="inline-flex items-center text-indigo-600 hover:text-indigo-800 transition">
             <i class="fa-solid fa-pen-to-square mr-1"></i> แก้ไข

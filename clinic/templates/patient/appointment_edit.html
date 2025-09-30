@@ -1,0 +1,73 @@
+{% extends "patient/base_patient.html" %}
+{% block title %}แก้ไขนัดหมาย{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <!-- Header -->
+  <h1 class="text-2xl font-bold mb-6 flex items-center text-indigo-700">
+    <i class="fa-solid fa-pen-to-square mr-2 text-indigo-500"></i>
+    แก้ไขนัดหมาย
+  </h1>
+
+  <!-- ✅ แสดงข้อความแจ้งเตือน -->
+  {% if messages %}
+  <div class="mb-4">
+    {% for message in messages %}
+    <div class="px-4 py-3 rounded-lg mb-2 shadow-sm
+                {% if message.tags == 'error' %} bg-red-100 text-red-700 border border-red-300
+                {% elif message.tags == 'success' %} bg-green-100 text-green-700 border border-green-300
+                {% else %} bg-gray-100 text-gray-700 border border-gray-300 {% endif %}">
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Form -->
+  <div class="bg-white p-6 rounded-xl shadow-lg border border-indigo-100">
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Dentist -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">ทันตแพทย์</label>
+          {{ form.dentist }}
+        </div>
+        <!-- Service -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">บริการ</label>
+          {{ form.service }}
+        </div>
+        <!-- Date -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">วันที่</label>
+          {{ form.appointment_date }}
+        </div>
+        <!-- Start time -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">เวลาเริ่ม</label>
+          {{ form.start_time }}
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">หมายเหตุ</label>
+        {{ form.notes }}
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex justify-end space-x-3 pt-4">
+        <a href="{% url 'appointments_patient' %}" 
+           class="px-5 py-2 rounded-xl bg-gray-200 text-gray-700 hover:bg-gray-300 transition font-medium">
+          <i class="fa-solid fa-xmark mr-1"></i> ยกเลิก
+        </a>
+        <button type="submit" 
+                class="px-5 py-2 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-medium shadow hover:opacity-90 transition">
+          <i class="fa-solid fa-save mr-1"></i> บันทึกการแก้ไข
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

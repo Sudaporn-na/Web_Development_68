@@ -2,40 +2,40 @@
 {% block title %}หน้าหลักคนไข้{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto space-y-6">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
-  <h1 class="text-2xl font-bold mb-4">นัดหมายล่าสุดของคุณ</h1>
+  <h1 class="text-2xl font-bold mb-6 text-slate-900">นัดหมายล่าสุดของคุณ</h1>
 
-  <div class="bg-white rounded-lg shadow overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-violet-50">
-        <tr>
-          <th class="px-6 py-3">วันที่</th>
-          <th class="px-6 py-3">เวลา</th>
-          <th class="px-6 py-3">ทันตแพทย์</th>
-          <th class="px-6 py-3">บริการ</th>
-          <th class="px-6 py-3">สถานะ</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-gray-200">
-        {% for a in appointments %}
-        <tr>
-          <td class="px-6 py-4">{{ a.appointment_date }}</td>
-          <td class="px-6 py-4">{{ a.start_time }} - {{ a.end_time }}</td>
-          <td class="px-6 py-4">{{ a.dentist.name }}</td>
-          <td class="px-6 py-4">{{ a.service.name }}</td>
-          <td class="px-6 py-4">{{ a.get_status_display }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-          <td colspan="5" class="px-6 py-4 text-center text-gray-500">
-            ยังไม่มีนัดหมาย
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+  {% if appointments %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {% for a in appointments %}
+      <div class="bg-white p-6 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-2">
+          <h2 class="text-lg font-semibold text-violet-600 mb-2 sm:mb-0">
+            นัดหมายกับทันตแพทย์ {{ a.dentist.name }}
+          </h2>
+          <span class="px-3 py-1 text-sm font-medium rounded-full
+            {% if a.status == 'approved' %}bg-green-100 text-green-800
+            {% elif a.status == 'pending' %}bg-yellow-100 text-yellow-800
+            {% elif a.status == 'cancelled' %}bg-red-100 text-red-800
+            {% else %}bg-gray-100 text-gray-800{% endif %}">
+            {{ a.get_status_display }}
+          </span>
+        </div>
+        
+        <div class="text-gray-700 space-y-1">
+          <p><strong class="font-medium">บริการ:</strong> {{ a.service.name }}</p>
+          <p><strong class="font-medium">วันที่:</strong> {{ a.appointment_date }}</p>
+          <p><strong class="font-medium">เวลา:</strong> {{ a.start_time }} - {{ a.end_time }}</p>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">
+      ยังไม่มีนัดหมาย
+    </div>
+  {% endif %}
 
 </div>
 {% endblock %}

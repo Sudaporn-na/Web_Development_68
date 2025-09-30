@@ -12,6 +12,24 @@
   </a>
 </div>
 
+<!-- ✅ ฟอร์มกรองสถานะ -->
+<form method="get" action="{% url 'appointments' %}" class="mb-4 flex items-center space-x-3">
+  <label for="status" class="text-sm font-medium text-gray-700">กรองตามสถานะ:</label>
+  <select name="status" id="status"
+          class="rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+    <option value="">-- แสดงทั้งหมด --</option>
+    <option value="scheduled" {% if status == "scheduled" %}selected{% endif %}>รอการยืนยัน</option>
+    <option value="confirmed" {% if status == "confirmed" %}selected{% endif %}>ยืนยันแล้ว</option>
+    <option value="completed" {% if status == "completed" %}selected{% endif %}>เสร็จสิ้น</option>
+    <option value="cancelled" {% if status == "cancelled" %}selected{% endif %}>ถูกยกเลิก</option>
+    <option value="no_show" {% if status == "no_show" %}selected{% endif %}>ไม่มา</option>
+  </select>
+  <button type="submit" class="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm">
+    กรอง
+  </button>
+</form>
+
+
 <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-violet-100">
   <table class="min-w-full divide-y divide-violet-200">
     <thead class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
@@ -44,12 +62,32 @@
           </span>
         </td>
         <td class="px-6 py-4 text-center space-x-3">
-          <a href="{% url 'appointment_edit' a.pk %}" 
-             class="text-indigo-600 hover:text-indigo-800" title="แก้ไข">
+          <!-- Checkbox เปลี่ยนสถานะ -->
+          <input type="checkbox" 
+                 class="accent-green-600 cursor-pointer"
+                 {% if a.status == "completed" %}checked disabled{% endif %}
+                 onchange="markCompleted({{ a.id }})">
+
+          <!-- ✅ ปุ่มยืนยันจอง (เฉพาะนัดที่ผู้ป่วยสร้าง) -->
+          {% if a.status == "scheduled" and a.created_by != request.user %}
+          <a href="{% url 'appointment_confirm_admin' a.pk %}" 
+             class="w-full px-3 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600">
+            ยืนยันการจอง
+          </a>
+          <a href="{% url 'appointment_cancel' a.pk %}"
+             class="w-full px-3 py-1 bg-red-500 text-white text-sm rounded hover:bg-red-600"
+             onclick="return confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกนัดหมายนี้?');">
+            ยกเลิก
+          </a>
+          {% endif %}
+
+          <a href="{% url 'object_detail' 'appointment' a.pk %}" class="text-indigo-600 hover:text-indigo-800 ml-2" title="ดูรายละเอียด">
+            <i class="fa-solid fa-eye"></i>
+          </a>
+          <a href="{% url 'appointment_edit' a.pk %}" class="text-indigo-600 hover:text-indigo-800 ml-3" title="แก้ไข">
             <i class="fa-solid fa-pen-to-square"></i>
           </a>
-          <a href="{% url 'appointment_delete' a.pk %}" 
-             class="text-red-600 hover:text-red-800" title="ลบ">
+          <a href="{% url 'appointment_delete' a.pk %}" class="text-red-600 hover:text-red-800 ml-2" title="ลบ">
             <i class="fa-solid fa-trash"></i>
           </a>
         </td>
@@ -62,4 +100,22 @@
     </tbody>
   </table>
 </div>
+
+<script>
+function markCompleted(appointmentId) {
+  fetch(`/appointments/${appointmentId}/complete/`, {
+    method: "POST",
+    headers: {
+      "X-CSRFToken": "{{ csrf_token }}",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ status: "completed" }),
+  })
+  .then(res => {
+    if (res.ok) {
+      location.reload(); // reload หน้าเพื่ออัปเดตสถานะ
+    }
+  });
+}
+</script>
 {% endblock %}

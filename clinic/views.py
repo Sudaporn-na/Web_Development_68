@@ -15,7 +15,8 @@ from datetime import date
 
 from .decorators import role_required
 from .models import Patient, Dentist, Service, Appointment, EmailOTP
-from .forms import UserRegisterForm, PatientForm, DentistForm, ServiceForm, AppointmentForm
+from .forms import PatientProfileForm, UserRegisterForm, PatientForm, DentistForm, ServiceForm, AppointmentForm
+from clinic import models
 
 User = get_user_model()
 
@@ -34,9 +35,12 @@ def login_page(request):
                 return redirect("dashboard")
             elif user.role == "patient":
                 return redirect("patient_dashboard")
+            else:
+                return redirect("login")  # fallback
         else:
             messages.error(request, "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง")
     return render(request, "login.html")
+
 
 
 
@@ -62,6 +66,10 @@ def logout_view(request):
 # ---------------------------
 # 📊 Dashboard
 # ---------------------------
+# views.py
+from django.db.models import Count, Sum
+from .models import Patient, Appointment, Dentist
+
 @login_required
 @role_required(["admin"])
 def dashboard_page(request):
@@ -74,9 +82,6 @@ def dashboard_page(request):
     patients_count = Patient.objects.count()
     appointments_count = Appointment.objects.count()
     dentists_count = Dentist.objects.count()
-    total_revenue = Appointment.objects.filter(
-        status="completed"
-    ).aggregate(total=Sum("service__price"))["total"] or 0
 
     # จำนวนผู้ป่วยรายวันในเดือน
     days_in_month = calendar.monthrange(current_year, selected_month)[1]
@@ -95,6 +100,17 @@ def dashboard_page(request):
     female_count = Patient.objects.filter(gender="F").count()
     patients_gender = [male_count, female_count]
 
+    # นัดหมายตามสถานะในเดือน ✅ ใช้ appointment_date
+    status_stats = (
+        Appointment.objects
+        .filter(appointment_date__year=current_year, appointment_date__month=selected_month)
+        .values("status")
+        .annotate(count=Count("id"))
+    )
+    status_data = {item["status"]: item["count"] for item in status_stats}
+    status_labels = ["scheduled", "confirmed", "completed", "cancelled", "no_show"]
+    status_counts = [status_data.get(s, 0) for s in status_labels]
+
     # dropdown เดือน
     all_months = [{"value": i, "label": calendar.month_name[i]} for i in range(1, 13)]
 
@@ -102,15 +118,17 @@ def dashboard_page(request):
         "patients_count": patients_count,
         "appointments_count": appointments_count,
         "dentists_count": dentists_count,
-        "total_revenue": total_revenue,
         "patients_daily": patients_daily,
         "days": days,
         "patients_gender": patients_gender,
         "all_months": all_months,
         "selected_month": selected_month,
         "selected_month_label": selected_month_label,
+        "status_labels": status_labels,
+        "status_counts": status_counts,
     }
     return render(request, "dental_clinic/dashboard.html", context)
+
 
 
 # ---------------------------
@@ -122,15 +140,24 @@ def patients_page(request):
     patients = Patient.objects.all().order_by("-created_at")
     return render(request, "dental_clinic/patients.html", {"patients": patients})
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Appointment
 
 @login_required
 @role_required(["admin", "patient"])
 def appointments_page(request):
+    status = request.GET.get("status")
     appointments = Appointment.objects.select_related("patient", "dentist", "service").order_by(
         "-appointment_date", "-start_time"
     )
-    return render(request, "dental_clinic/appointments.html", {"appointments": appointments})
 
+    if status:
+        appointments = appointments.filter(status=status)
+    return render(request, "dental_clinic/appointments.html", {
+        "appointments": appointments,
+        "status": status,    
+        })
 
 @login_required
 @role_required(["admin"])
@@ -450,22 +477,241 @@ def patient_dashboard(request):
     }
     return render(request, "patient/patient_dashboard.html", context)
 
+
+
+# clinic/views.py
+# views.py
+from django.apps import apps
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
+
 @login_required
-def patient_profile(request):
-    users = get_object_or_404(User, email=request.user.email)
-    return render(request, "patient/patient_profile.html", {"patient": users})
+def object_detail(request, model_name, pk):
+    model = apps.get_model("clinic", model_name.capitalize())
+    obj = get_object_or_404(model, pk=pk)
+
+    # 🔹 เก็บคู่ (verbose_name, value) เป็น list
+    field_values = []
+    for field in model._meta.fields:
+        value = getattr(obj, field.name)
+        field_values.append({
+            "label": field.verbose_name,
+            "value": value,
+        })
+
+    return render(request, "dental_clinic/object_detail.html", {
+        "object": obj,
+        "type": model._meta.verbose_name,
+        "field_values": field_values,
+    })
+
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from .models import Appointment
+
+@login_required
+@csrf_exempt
+def complete_appointment(request, pk):
+    """เปลี่ยนสถานะนัดหมายเป็น completed"""
+    if request.method == "POST":
+        try:
+            appt = Appointment.objects.get(pk=pk)
+            appt.status = "completed"
+            appt.save()
+            return JsonResponse({"success": True})
+        except Appointment.DoesNotExist:
+            return JsonResponse({"success": False, "error": "Not found"}, status=404)
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)
+
+
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from .models import Appointment, Dentist, Service
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+
+from .models import Appointment, Patient, Dentist, Service
+from .forms import PatientAppointmentForm
 
 @login_required
 def patient_appointments(request):
     patient = Patient.objects.filter(email=request.user.email).first()
     if not patient:
-        appointments = []
+        messages.error(request, "ไม่พบข้อมูลผู้ป่วยของคุณ กรุณาติดต่อคลินิก")
+        return redirect("patient_dashboard")
+
+    if request.method == "POST":
+        form = PatientAppointmentForm(request.POST, patient=patient)
+        if form.is_valid():
+            appt = form.save(commit=False)
+            appt.patient = patient
+            appt.status = "scheduled"
+            appt.created_by = request.user
+            appt.save()
+            messages.success(request, "เพิ่มนัดหมายเรียบร้อย")
+            return redirect("appointments_patient")
+        else:
+            for err in form.non_field_errors():
+                messages.error(request, err)
     else:
-        appointments = Appointment.objects.filter(
-            patient=patient
-        ).select_related("dentist", "service").order_by("-appointment_date", "-start_time")
+        form = PatientAppointmentForm(patient=patient)
+
+    appointments = Appointment.objects.filter(
+        patient=patient
+    ).select_related("dentist", "service").order_by("-appointment_date", "-start_time")
 
     return render(request, "patient/appointments_patient.html", {
         "appointments": appointments,
+        "form": form,
         "patient": patient,
     })
+
+
+
+@login_required
+def appointment_update_status(request, pk):
+    appt = get_object_or_404(Appointment, pk=pk)
+    if request.method == "POST":
+        new_status = request.POST.get("status")
+        if new_status in dict(Appointment.STATUS_CHOICES):
+            appt.status = new_status
+            appt.save()
+            messages.success(request, "อัปเดตสถานะสำเร็จ")
+        else:
+            messages.error(request, "สถานะไม่ถูกต้อง")
+    return redirect("appointments_patient")
+
+
+@login_required
+def confirm_appointment(request, pk):
+    # หา patient จาก email user ที่ login
+    patient = Patient.objects.filter(email=request.user.email).first()
+    if not patient:
+        messages.error(request, "ไม่พบข้อมูลผู้ป่วยของคุณ")
+        return redirect("appointments_patient")
+
+    # หา appointment ของ patient
+    appt = get_object_or_404(Appointment, pk=pk, patient=patient)
+
+    # ถ้าคนที่สร้างนัดนี้เป็น user คนเดียวกับผู้ที่ล็อกอิน
+    if appt.created_by == request.user:
+        messages.error(
+            request,
+            "คุณไม่สามารถยืนยันการจองที่คุณสร้างเองได้ ต้องรอแอดมินคลินิกยืนยันการจองแทน"
+        )
+        return redirect("appointments_patient")
+
+    # ✅ ยืนยันได้ ก็ต่อเมื่อสร้างโดย Admin
+    appt.status = "confirmed"
+    appt.save()
+
+    messages.success(request, "คุณได้ยืนยันการนัดหมายแล้ว")
+    return redirect("appointments_patient")
+
+
+
+
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Appointment
+
+@login_required
+def confirm_appointment_admin(request, pk):
+    appt = get_object_or_404(Appointment, pk=pk)
+
+    # ❌ ถ้าแอดมินเป็นคนสร้างเอง ห้ามยืนยัน
+    if appt.created_by == request.user:
+        messages.error(request, "ไม่สามารถยืนยันการจองที่คุณสร้างเองได้")
+        return redirect("appointments")
+
+    # ✅ เปลี่ยนสถานะเป็น confirmed
+    appt.status = "confirmed"
+    appt.save()
+    messages.success(request, f"ยืนยันการจองของ {appt.patient.name} เรียบร้อยแล้ว")
+
+    return redirect("appointments")
+
+@login_required
+def cancel_appointment(request, pk):
+    patient = Patient.objects.filter(email=request.user.email).first()
+    appt = get_object_or_404(Appointment, pk=pk, patient=patient)
+
+    appt.status = "cancelled"
+    appt.save()
+    messages.success(request, "คุณได้ยกเลิกการนัดหมายแล้ว")
+    return redirect("appointments_patient")
+
+
+@login_required
+def edit_appointment(request, pk):
+    patient = Patient.objects.filter(email=request.user.email).first()
+    appt = get_object_or_404(Appointment, pk=pk, patient=patient, created_by=request.user)
+
+    if request.method == "POST":
+        form = PatientAppointmentForm(request.POST, patient=patient, instance=appt)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "แก้ไขนัดหมายเรียบร้อย")
+            return redirect("appointments_patient")   
+    else:
+        form = PatientAppointmentForm(patient=patient, instance=appt)
+
+    return render(request, "patient/appointment_edit.html", {"form": form, "appt": appt})
+
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Patient
+from .forms import PatientForm
+
+@login_required
+def patient_profile(request):
+    patient = Patient.objects.filter(email=request.user.email).first()
+    if not patient:
+        messages.error(request, "ไม่พบข้อมูลผู้ป่วย")
+        return redirect("patient_dashboard")
+
+    form = PatientProfileForm(instance=patient)
+    return render(request, "patient/patient_profile.html", {
+        "patient": patient,
+        "form": form,   # 👈 ส่งฟอร์มไปด้วย
+    })
+
+
+
+@login_required
+def patient_edit_profile(request):
+    patient = Patient.objects.filter(email=request.user.email).first()
+    if not patient:
+        messages.error(request, "ไม่พบข้อมูลผู้ป่วย")
+        return redirect("patient_dashboard")
+
+    if request.method == "POST":
+        form = PatientProfileForm(request.POST, request.FILES, instance=patient)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "แก้ไขโปรไฟล์เรียบร้อย")
+        else:
+            messages.error(request, "ข้อมูลไม่ถูกต้อง กรุณาลองอีกครั้ง")
+
+    return redirect("patient_profile")
+

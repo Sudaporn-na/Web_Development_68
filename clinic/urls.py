@@ -29,16 +29,30 @@ urlpatterns = [
     path('services/<int:pk>/delete/', views.service_delete, name='service_delete'),
 
     path('logout/', views.logout_view, name='logout'),
+    path("detail/<str:model_name>/<int:pk>/", views.object_detail, name="object_detail"),
 
     path("password/otp/request/", views.request_otp_view, name="request_otp"),
     path("password/otp/verify/", views.verify_otp_view, name="verify_otp"),
     path("password/otp/reset/", views.reset_password_custom, name="reset_password_custom"),
+    path("appointments/<int:pk>/confirm-admin/", views.confirm_appointment_admin, name="appointment_confirm_admin"),
+
 
 
 
     path("patient/dashboard/", views.patient_dashboard, name="patient_dashboard"),
     path("patient/profile/", views.patient_profile, name="patient_profile"),
+    # patient/profile/ และ patient/profile/edit/
+    path("patient/profile/edit/", views.patient_edit_profile, name="patient_edit_profile"),
+
     path("patient/appointments/", views.patient_appointments, name="appointments_patient"),
+
+    path("appointments/<int:pk>/complete/", views.complete_appointment, name="appointment_complete"),
+
+    path("patient/appointments/<int:pk>/confirm/", views.confirm_appointment, name="appointment_confirm"),
+    path("patient/appointments/<int:pk>/cancel/", views.cancel_appointment, name="appointment_cancel"),
+    path("patient/appointments/<int:pk>/edit/", views.edit_appointment, name="appointment_edit_patient"),
+    path("appointments/<int:pk>/update-status/", views.appointment_update_status, name="appointment_update_status"),
+
     
 ]
 

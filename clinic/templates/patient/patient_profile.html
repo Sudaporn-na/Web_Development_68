@@ -5,11 +5,21 @@
 <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow space-y-6">
   <h1 class="text-2xl font-bold mb-4">ข้อมูลส่วนตัว</h1>
 
+  <!-- รูปโปรไฟล์ -->
+  <div class="flex flex-col items-center space-y-3">
+    {% if patient.photo %}
+      <img src="{{ patient.photo.url }}" alt="Profile Picture"
+           class="w-32 h-32 rounded-full object-cover border-2 border-indigo-500">
+    {% else %}
+      <div class="w-32 h-32 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+        <i class="fa-solid fa-user text-4xl"></i>
+      </div>
+    {% endif %}
+    <p class="text-lg font-semibold">{{ patient.name }}</p>
+  </div>
+
+  <!-- ข้อมูล -->
   <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div>
-      <p class="font-medium text-gray-700">ชื่อ:</p>
-      <p>{{ patient.name }}</p>
-    </div>
     <div>
       <p class="font-medium text-gray-700">เพศ:</p>
       <p>{{ patient.get_gender_display }}</p>
@@ -33,10 +43,84 @@
   </div>
 
   <div class="flex justify-end">
-    <a href="{% url 'patient_edit' patient.pk %}" 
+    <button onclick="openModal()"
        class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
        <i class="fa-solid fa-pen mr-2"></i> แก้ไขโปรไฟล์
-    </a>
+    </button>
   </div>
 </div>
+
+<!-- Modal -->
+<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+    <h2 class="text-xl font-bold mb-4">แก้ไขโปรไฟล์</h2>
+
+    <form method="post" enctype="multipart/form-data" action="{% url 'patient_edit_profile' %}" class="space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="block text-sm font-medium text-gray-700">ชื่อ</label>
+        <input type="text" name="name" value="{{ patient.name }}"
+               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">เพศ</label>
+        <select name="gender" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="M" {% if patient.gender == "M" %}selected{% endif %}>ชาย</option>
+          <option value="F" {% if patient.gender == "F" %}selected{% endif %}>หญิง</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">วันเกิด</label>
+        <input type="date" name="date_of_birth" value="{{ patient.date_of_birth|date:'Y-m-d' }}"
+               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">เบอร์โทร</label>
+        <input type="text" name="phone" value="{{ patient.phone }}"
+               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">อีเมล</label>
+        <input type="email" name="email" value="{{ patient.email }}"
+               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">ที่อยู่</label>
+        <textarea name="address" rows="3"
+               class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">{{ patient.address }}</textarea>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">รูปโปรไฟล์</label>
+        <input type="file" name="photo" class="w-full">
+      </div>
+
+      <div class="flex justify-end space-x-3">
+        <button type="button" onclick="closeModal()" 
+                class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">ยกเลิก</button>
+        <button type="submit" 
+                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">บันทึก</button>
+      </div>
+    </form>
+
+    <!-- ปุ่มปิด -->
+    <button onclick="closeModal()" class="absolute top-3 right-3 text-gray-500 hover:text-gray-700">
+      <i class="fa-solid fa-xmark text-xl"></i>
+    </button>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById("editModal").classList.remove("hidden");
+  }
+  function closeModal() {
+    document.getElementById("editModal").classList.add("hidden");
+  }
+</script>
 {% endblock %}

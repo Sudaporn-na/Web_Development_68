@@ -32,6 +32,9 @@
         <td class="px-6 py-4">{{ p.age }}</td>
         <td class="px-6 py-4">{{ p.phone }}</td>
         <td class="px-6 py-4 text-center space-x-3">
+          <a href="{% url 'object_detail' 'patient' p.pk %}" class="text-indigo-600 hover:text-indigo-800 ml-2" title="ดูรายละเอียด">
+            <i class="fa-solid fa-eye"></i>
+          </a>
           <a href="{% url 'patient_edit' p.pk %}" 
              class="inline-flex items-center px-3 py-1 rounded-lg text-indigo-600 bg-indigo-50 hover:bg-indigo-100 hover:text-indigo-800 transition">
             <i class="fa-solid fa-pen-to-square"></i>
